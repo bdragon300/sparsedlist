@@ -1,6 +1,6 @@
 # sparsedlist
 
-**sparsedlist** is endless list with non-contiguous indexes. Based on *skiplist* structure.
+**sparsedlist** is endless list with non-contiguous indexes. Based on [Skip list](https://en.wikipedia.org/wiki/Skip_list) structure.
 
 To add value to the list just set it with any index:
 
