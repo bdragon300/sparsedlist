@@ -258,19 +258,26 @@ class SparsedList(MutableSequence):
         raise NotImplementedError
 
     def append(self, value):
+        """Append given value in place after the last item"""
         self.data.insert(self.tail() + 1, value)
 
     def extend(self, items):
+        """
+        Extend (merge) SparsedList with given items. Already existing items will be overwritten
+        :param items: key/value pairs iterable
+        """
         for i, v in items:
             self.data.replace(i, v)
 
     def clear(self):
+        """Clear all data"""
         self.data.clear()
 
     def reverse(self):
         raise TypeError("'SparsedList' object is not reversible")
 
     def pop(self, index=-1):
+        """Pop the item with given index. Negative indexes counted from position of the last existing item"""
         if index < 0:
             index = max(self.tail() + index + 1, 0)
 
@@ -280,6 +287,7 @@ class SparsedList(MutableSequence):
             raise IndexError('Pop from empty SparsedList')
 
     def remove(self, value):
+        """Remove the first item from the list whose value is equal to x. ValueError raised if value not found"""
         ind = self.index(value)
         self.data.remove(ind)
 
@@ -294,6 +302,10 @@ class SparsedList(MutableSequence):
         return obj
 
     def index(self, value, start=None, stop=None):
+        """
+        Return zero-based index in the list of the first item whose value is equal to x.
+        Raises a ValueError if there is no such item.
+        """
         if start is not None and start < 0:
             start = max(self.tail() + start + 1, 0)
         if stop is not None and stop < 0:
@@ -307,8 +319,8 @@ class SparsedList(MutableSequence):
 
     def count(self, *args, **kwargs):
         """
-        Return count of existing elements in SparsedList.
-        If `item` parameter given then method returns how many times `item` occurs
+        Return count of existing elements
+        If `item` parameter given then method returns how many times `item` occurs in list
         :param item: Optional. Value to search for in Sparsed list
         """
         if args or kwargs:
@@ -367,7 +379,7 @@ class SparsedList(MutableSequence):
 
     def _slice_indexes(self, s):
         """
-        Calculate index bounds from slice. If slice piece is None, then appropriate value also returned as None
+        Calculate positive index bounds from slice. If slice param is None, then it will be left as None
         :param s: slice object
         :return: start, stop, step
         """
