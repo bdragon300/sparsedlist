@@ -20,24 +20,12 @@ class SparsedList(MutableSequence):
 
     def __repr__(self): return 'SparsedList{' + str(dict(self.data.items())) + '}'
 
-    # def __lt__(self, other):
-    #     return any(a[0] > b[0] or a[1] < b[1] for a, b in zip(self.data, self.__cast(other)))
-    #
-    # def __le__(self, other):
-    #     return all(a[1] <= b[1] and a[0] == b[0] for a, b in zip(self.data, self.__cast(other)))
-
     def __eq__(self, other):
         return len(self.data) == len(self.__cast(other)) \
                and all(a[1] == b[1] and a[0] == b[0] for a, b in zip(self.data, self.__cast(other)))
 
     def __ne__(self, other):
         return not self.__eq__(other)
-
-    # def __gt__(self, other):
-    #     return any(a[1] > b[1] and a[0] == b[0] for a, b in zip(self.data, self.__cast(other)))
-    #
-    # def __ge__(self, other):
-    #     return all(a[1] >= b[1] and a[0] == b[0] for a, b in zip(self.data, self.__cast(other)))
 
     @staticmethod
     def __cast(other):
