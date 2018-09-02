@@ -287,7 +287,7 @@ class SparsedList(MutableSequence):
             raise IndexError('Pop from empty SparsedList')
 
     def remove(self, value):
-        """Remove the first item from the list whose value is equal to x. ValueError raised if value not found"""
+        """Remove the first item from the list whose value is equal to x. ValueError is raised if value not found"""
         ind = self.index(value)
         self.data.remove(ind)
 
@@ -320,7 +320,7 @@ class SparsedList(MutableSequence):
     def count(self, *args, **kwargs):
         """
         Return count of existing elements
-        If `item` parameter given then method returns how many times `item` occurs in list
+        If `item` keyword parameter given then method returns how many times `item` occurs in list
         :param item: Optional. Value to search for in Sparsed list
         """
         if args or kwargs:
