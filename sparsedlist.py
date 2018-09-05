@@ -209,51 +209,6 @@ class SparsedList(MutableSequence):
 
         return self
 
-    def __or__(self, other):
-        raise NotImplementedError
-
-    def __ror__(self, other):
-        raise NotImplementedError
-
-    def __ior__(self, other):
-        raise NotImplementedError
-
-    def __and__(self, other):
-        raise NotImplementedError
-
-    def __rand__(self, other):
-        raise NotImplementedError
-
-    def __iand__(self, other):
-        raise NotImplementedError
-
-    def __xor__(self, other):
-        raise NotImplementedError
-
-    def __rxor__(self, other):
-        raise NotImplementedError
-
-    def __ixor__(self, other):
-        raise NotImplementedError
-
-    def __rshift__(self, other):
-        raise NotImplementedError
-
-    def __rrshift__(self, other):
-        raise NotImplementedError
-
-    def __irshift__(self, other):
-        raise NotImplementedError
-
-    def __lshift__(self, other):
-        raise NotImplementedError
-
-    def __rlshift__(self, other):
-        raise NotImplementedError
-
-    def __ilshift__(self, other):
-        raise NotImplementedError
-
     def insert(self, index, value):
         raise NotImplementedError
 
@@ -340,42 +295,6 @@ class SparsedList(MutableSequence):
     def tail(self):
         """Return index of the last element"""
         return self.data[-1][0]
-
-    @staticmethod
-    def _merge(a, b):
-        """
-        Returns new instance merged from `a` and `b` iterables. They must have ((index, value),...) format.
-        Values from `a` will be overwritten by `b` on the same position.
-        :param a: iterable
-        :param b: iterable
-        :return: SkipList object
-        """
-        obj = SkipList()
-        aindexes = set(a[0] for a in a)
-        bindexes = set(b[0] for b in b)
-        av = (-1, -1)
-        bv = (-1, -1)
-        ai, bi = iter(a), iter(b)
-
-        for i in sorted(aindexes | bindexes):
-            try:
-                if av is not None:
-                    if av[0] < i:
-                        av = next(ai)
-                    if av[0] == i:
-                        obj.replace(*av)
-            except StopIteration:
-                av = None
-            try:
-                if bv is not None:
-                    if bv[0] < i:
-                        bv = next(bi)
-                    if bv[0] == i:
-                        obj.replace(*bv)
-            except StopIteration:
-                bv = None
-
-        return obj
 
     def _slice_indexes(self, s):
         """
