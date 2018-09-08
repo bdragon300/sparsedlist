@@ -449,9 +449,19 @@ class TestSparsedList:
 
         assert self.obj.count() == 0
 
-    def test_reverse(self):
-        with pytest.raises(TypeError):
-            self.obj.reverse()
+    def test_reverse1(self, plain_data):
+        self.obj.extend(plain_data)
+
+        self.obj.reverse()
+
+        assert list(self.obj.items()) == list(zip((i[0] for i in plain_data), (i[1] for i in plain_data[::-1])))
+
+    def test_reverse2(self, powertwo_data):
+        self.obj.extend(powertwo_data)
+
+        self.obj.reverse()
+
+        assert list(self.obj.items()) == list(zip((i[0] for i in powertwo_data), (i[1] for i in powertwo_data[::-1])))
 
     @pytest.mark.parametrize('ind', (-2, 1))
     def test_pop(self, ind, plain_data):

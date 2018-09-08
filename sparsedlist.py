@@ -255,7 +255,13 @@ class SparsedList(MutableSequence):
         self.data.clear()
 
     def reverse(self):
-        raise TypeError("'SparsedList' object is not reversible")
+        new = SkipList()
+
+        keys = list(self.data.keys())
+        for k, v in zip(keys[::-1], self.data.values()):
+            new.insert(k, v)
+
+        self.data = new
 
     def pop(self, index=-1):
         """Pop the item with given index. Negative indexes counted from position of the last existing item"""
