@@ -227,7 +227,16 @@ class SparsedList(MutableSequence):
         return self
 
     def insert(self, index, value):
-        raise NotImplementedError
+        index = int(index)
+
+        new = SkipList()
+        for k, v in self.data.items(stop=index):
+            new.insert(k, v)
+        new.insert(index, value)
+        for k, v in self.data.items(start=index):
+            new.insert(k + 1, v)
+
+        self.data = new
 
     def append(self, value):
         """Append given value in place after the last item"""

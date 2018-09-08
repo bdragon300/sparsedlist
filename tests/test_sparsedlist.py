@@ -402,6 +402,28 @@ class TestSparsedList:
         assert list(res.items()) == check_data
         assert res is self.obj
 
+    def test_insert1(self, plain_data):
+        self.obj.extend(plain_data)
+        test_data = object()
+        check_data = plain_data[:10] \
+                     + [(10, test_data)] \
+                     + [(k + 1, v) for k, v in plain_data[10:]]
+
+        self.obj.insert(10, test_data)
+
+        assert list(self.obj.items()) == check_data
+
+    def test_insert2(self, powertwo_data):
+        self.obj.extend(powertwo_data)
+        test_data = object()
+        check_data = [(k, v) for k, v in powertwo_data if k < 10] \
+                     + [(10, test_data)] \
+                     + [(k + 1, v) for k, v in powertwo_data if k >= 10]
+
+        self.obj.insert(10, test_data)
+
+        assert list(self.obj.items()) == check_data
+
     def test_append(self, plain_data):
         self.obj.extend(plain_data)
         test_data = 'test_mark'
