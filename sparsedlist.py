@@ -112,17 +112,32 @@ class SparsedList(MutableSequence):
             self.data.replace(key, value)
 
     def __delitem__(self, key):
-        try:
-            key = int(key)
-            if key < 0:
-                last_ind = self.data[-1][0]  # IndexError if empty
-                key = last_ind + key + 1
-                if key < 0:
-                    raise IndexError("Negative index overlaps the list start")
+        if isinstance(key, slice):
+            start, stop, step = self._slice_indexes(key)
 
-            self.data.remove(key)
-        except KeyError:
-            raise IndexError("Item '{}' does not exist".format(key))
+            step = step or 1
+            start = start or 0
+            stop = stop or self.tail() + 1
+            c = start
+            while stop is None or c < stop:
+                try:
+                    self.data.remove(c)
+                except KeyError:
+                    pass
+
+                c += step
+        else:
+            try:
+                key = int(key)
+                if key < 0:
+                    last_ind = self.data[-1][0]  # IndexError if empty
+                    key = last_ind + key + 1
+                    if key < 0:
+                        raise IndexError("Negative index overlaps the list start")
+
+                self.data.remove(key)
+            except KeyError:
+                raise IndexError("Item '{}' does not exist".format(key))
 
     def __iter__(self):
         return iter(self.data.values())

@@ -288,6 +288,19 @@ class TestSparsedList:
         with pytest.raises(IndexError):
             self.obj[ind]
 
+    @pytest.mark.parametrize('ind', itertools.chain(
+        slice_permutations(0, 5, 3),
+        slice_permutations(0, 200, 3),
+        slice_permutations(-10, -5, 3),
+        slice_permutations(5, 5, 3)
+    ))
+    def test_delitem_slice(self, ind, plain_data):
+        self.obj.extend(plain_data)
+
+        del self.obj[ind]
+
+        assert all(i not in self.obj for i in range(*ind.indices(len(plain_data))))
+
     @pytest.mark.parametrize('ind', (1000, -1000))
     def test_delitem_error(self, ind, plain_data):
         self.obj.extend(plain_data)
