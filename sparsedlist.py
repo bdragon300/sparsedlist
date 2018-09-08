@@ -279,7 +279,12 @@ class SparsedList(MutableSequence):
         self.data.remove(ind)
 
     def sort(self, *args, **kwds):
-        raise TypeError("'SparsedList' object cannot be sorted")
+        new = SkipList()
+
+        for k, v in zip(self.data.keys(), sorted(self.data.values())):
+            new.insert(k, v)
+
+        self.data = new
 
     def copy(self):
         obj = self.__class__()

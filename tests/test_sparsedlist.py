@@ -493,9 +493,27 @@ class TestSparsedList:
         with pytest.raises(ValueError):
             self.obj.remove(123)
 
-    def test_sort(self):
-        with pytest.raises(TypeError):
-            self.obj.sort()
+    def test_sort1(self):
+        integers = [i for i in range(10)]
+        check_data = list(enumerate(integers))
+        random.shuffle(integers)
+        shuffled = list(enumerate(integers))
+        self.obj.extend(shuffled)
+
+        self.obj.sort()
+
+        assert list(self.obj.items()) == check_data
+
+    def test_sort2(self):
+        integers = [i for i in range(10)]
+        check_data = list(zip((2 ** i for i in range(10)), integers))
+        random.shuffle(integers)
+        shuffled = list(zip((2 ** i for i in range(10)), integers))
+        self.obj.extend(shuffled)
+
+        self.obj.sort()
+
+        assert list(self.obj.items()) == check_data
 
     def test_copy(self, plain_data):
         self.obj.extend(plain_data)
