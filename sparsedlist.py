@@ -53,7 +53,9 @@ class SparsedList(MutableSequence):
                 elif i[0] > c:
                     raise IndexError("Item with index '{}' does not exist".format(c))
 
-            if c == (start or 0):
+            if stop is not None and (start or 0) >= stop:
+                return []
+            elif c == (start or 0):
                 raise IndexError("Item with index '{}' does not exist".format(c))
 
         if isinstance(item, slice):

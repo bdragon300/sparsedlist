@@ -113,6 +113,18 @@ class TestSparsedList:
         print(list(self.obj.items()))
         assert list(res) == test_data[ind]
 
+    @pytest.mark.parametrize('ind', (
+        slice(5, 5), slice(5, 5, 2),
+        slice(100, 100), slice(100, 100, 3),
+        slice(10, 5), slice(10, 5, 3)
+    ))
+    def test_getitem_slice_empty_list(self, ind, plain_data):
+        self.obj.extend(plain_data)
+
+        res = self.obj[ind]
+
+        assert list(res) == []
+
     @pytest.mark.parametrize('ind', (3, 2**15, -2**15))
     def test_getitem_indexerror_int_index(self, ind, powertwo_data):
         self.obj.extend(powertwo_data)
@@ -140,9 +152,7 @@ class TestSparsedList:
 
     @pytest.mark.parametrize('ind', itertools.chain(
         slice_permutations(1, 10, 3),
-        slice_permutations(-200, -100, 3),
-        slice_permutations(10, 1, 3),
-        slice_permutations(-100, -200, 3),
+        slice_permutations(-200, -100, 3)
     ))
     def test_getitem_error_on_empty_list(self, ind):
         with pytest.raises(IndexError):
