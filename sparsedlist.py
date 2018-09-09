@@ -314,17 +314,12 @@ class SparsedList(MutableSequence):
 
         raise ValueError("'{}' is not in SparsedList".format(value))
 
-    def count(self, *args, **kwargs):  # FIXME: add item to signature
+    def count(self, item):
         """
-        Return count of existing elements
-        If `item` keyword parameter given then method returns how many times `item` occurs in list
-        :param item: Optional. Value to search for in Sparsed list
+        Return total number of occurrences of given `item` in list
+        :param item:
         """
-        if args or kwargs:
-            item = (args and args[0]) or (kwargs and kwargs.get('item'))
-            return len([x for x in self.data.values() if x == item])
-        else:
-            return len(self.data)
+        return len([1 for x in self.data.values() if x == item])
 
     def items(self, start=None, stop=None):
         if start is not None and start < 0:

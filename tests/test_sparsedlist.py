@@ -472,7 +472,7 @@ class TestSparsedList:
 
         self.obj.clear()
 
-        assert self.obj.count() == 0
+        assert len(self.obj) == 0
 
     def test_reverse1(self, plain_data):
         self.obj.extend(plain_data)
@@ -496,7 +496,7 @@ class TestSparsedList:
         res = self.obj.pop(ind)
 
         assert res == check_data[ind]
-        assert self.obj.count() == len(check_data) - 1
+        assert len(self.obj) == len(check_data) - 1
 
     def test_pop_error_empty_list(self):
         with pytest.raises(IndexError):
@@ -581,29 +581,12 @@ class TestSparsedList:
         with pytest.raises(ValueError):
             self.obj.index('not_found')
 
-    def test_count_return_items_count(self, plain_data):
-        self.obj.extend(plain_data)
-        test_data = list(plain_data)
-
-        res = self.obj.count()
-
-        assert res == len(test_data)
-
     def test_count_item_arg(self):
         test_data = enumerate([x % 5 for x in range(40)])
         check_data = len([x for x in test_data if x == 1])
         self.obj.extend(test_data)
 
         res = self.obj.count(1)
-
-        assert res == check_data
-
-    def test_count_item_kwarg(self):
-        test_data = enumerate([x % 5 for x in range(40)])
-        check_data = len([x for x in test_data if x == 1])
-        self.obj.extend(test_data)
-
-        res = self.obj.count(item=1)
 
         assert res == check_data
 
