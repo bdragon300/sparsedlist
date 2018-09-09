@@ -34,11 +34,8 @@ class SparsedList(MutableSequence):
     def __contains__(self, item):
         return self.data.__contains__(item)
 
-    def __len__(self):  # FIXME: return elems count
-        try:
-            return self.tail() + 1
-        except IndexError:
-            return 0
+    def __len__(self):
+        return len(self.data)
 
     def __getitem__(self, item):
         def objs(start, stop, step):

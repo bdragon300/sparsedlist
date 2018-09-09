@@ -85,7 +85,7 @@ class TestSparsedList:
 
     def test_len(self, powertwo_data):
         self.obj.extend(powertwo_data)
-        check_data = list(powertwo_data)[-1][0] + 1
+        check_data = len(powertwo_data)
 
         res = len(self.obj)
 
