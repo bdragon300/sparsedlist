@@ -18,6 +18,9 @@ class SparsedList(MutableSequence):
             for i, v in inititems:
                 self.data.insert(i, v)
 
+    def _clone(self):
+        return self.__class__()
+
     def __repr__(self): return 'SparsedList{' + str(dict(self.data.items())) + '}'
 
     def __eq__(self, other):
@@ -144,7 +147,7 @@ class SparsedList(MutableSequence):
         return (self.data.search(i) for i in reversed(keys))
 
     def __add__(self, other):
-        obj = self.__class__()  # FIXME: missing constructor params
+        obj = self._clone()
         try:
             offset = self.tail() + 1
         except IndexError:
@@ -161,7 +164,7 @@ class SparsedList(MutableSequence):
         return obj
 
     def __radd__(self, other):
-        obj = self.__class__()  # FIXME: missing constructor params
+        obj = self._clone()
 
         if isinstance(other, SparsedList):
             try:
@@ -200,7 +203,7 @@ class SparsedList(MutableSequence):
         if not isinstance(n, int):
             raise TypeError("can't multiply sequence by non-int of type '{}'".format(type(n)))
 
-        obj = self.__class__()  # FIXME: missing constructor params
+        obj = self._clone()
 
         try:
             offset = self.tail() + 1
@@ -292,7 +295,7 @@ class SparsedList(MutableSequence):
         self.data = new
 
     def copy(self):
-        obj = self.__class__()  # FIXME: missing constructor params
+        obj = self._clone()
         for p in self.data.items():
             obj.data.insert(*p)
 
