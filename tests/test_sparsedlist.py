@@ -310,7 +310,7 @@ class TestSparsedList:
 
     def test_reversed_result(self, powertwo_data):
         self.obj.extend(powertwo_data)
-        check_data = list(zip([x[0] for x in reversed(powertwo_data)], [x[1] for x in powertwo_data]))
+        check_data = [i[1] for i in reversed(powertwo_data)]
 
         res = reversed(self.obj)
 

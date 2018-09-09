@@ -144,10 +144,10 @@ class SparsedList(MutableSequence):
 
     def __reversed__(self):
         keys = list(self.data.keys())
-        return (i for i in zip(reversed(keys), self.data.values()))
+        return (self.data.search(i) for i in reversed(keys))
 
     def __add__(self, other):
-        obj = self.__class__()
+        obj = self.__class__()   # FIXME: missing constructor params
         offset = len(self)
 
         if isinstance(other, SparsedList):
@@ -161,7 +161,7 @@ class SparsedList(MutableSequence):
         return obj
 
     def __radd__(self, other):
-        obj = self.__class__()
+        obj = self.__class__()  # FIXME: missing constructor params
 
         if isinstance(other, SparsedList):
             try:
@@ -194,7 +194,8 @@ class SparsedList(MutableSequence):
         return self
 
     def __mul__(self, n):
-        obj = self.__class__()
+        # FIXME: check n is int
+        obj = self.__class__()  # FIXME: missing constructor params
         offset = len(self)
 
         for c in range(0, offset * n, offset):
@@ -206,6 +207,7 @@ class SparsedList(MutableSequence):
     __rmul__ = __mul__
 
     def __imul__(self, n):
+        # FIXME: check n is int
         offset = len(self)
 
         for c in range(offset, offset * n, offset):
@@ -243,6 +245,7 @@ class SparsedList(MutableSequence):
         self.data.clear()
 
     def reverse(self):
+        # TODO: optimize by memory
         new = SkipList()
 
         keys = list(self.data.keys())
@@ -275,7 +278,7 @@ class SparsedList(MutableSequence):
         self.data = new
 
     def copy(self):
-        obj = self.__class__()
+        obj = self.__class__()  # FIXME: missing constructor params
         for p in self.data.items():
             obj.data.insert(*p)
 
