@@ -143,7 +143,8 @@ class SparsedList(MutableSequence):
         return iter(self.data.values())
 
     def __reversed__(self):
-        raise TypeError("'SparsedList' object is not reversible")
+        keys = list(self.data.keys())
+        return (i for i in zip(reversed(keys), self.data.values()))
 
     def __add__(self, other):
         obj = self.__class__()

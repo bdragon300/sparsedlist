@@ -308,9 +308,20 @@ class TestSparsedList:
         with pytest.raises(IndexError):
             del self.obj[ind]
 
-    def test_reversed_error(self):
-        with pytest.raises(TypeError):
-            reversed(self.obj)
+    def test_reversed_result(self, powertwo_data):
+        self.obj.extend(powertwo_data)
+        check_data = list(zip([x[0] for x in reversed(powertwo_data)], [x[1] for x in powertwo_data]))
+
+        res = reversed(self.obj)
+
+        assert list(res) == check_data
+
+    def test_reversed_not_modify(self, powertwo_data):
+        self.obj.extend(powertwo_data)
+
+        res = reversed(self.obj)
+
+        assert list(self.obj.items()) == powertwo_data
 
     def test_add_list(self, powertwo_data):
         self.obj.extend(powertwo_data)
