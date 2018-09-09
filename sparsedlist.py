@@ -34,7 +34,7 @@ class SparsedList(MutableSequence):
     def __contains__(self, item):
         return self.data.__contains__(item)
 
-    def __len__(self):
+    def __len__(self):  # FIXME: return elems count
         try:
             return self.tail() + 1
         except IndexError:
@@ -194,7 +194,9 @@ class SparsedList(MutableSequence):
         return self
 
     def __mul__(self, n):
-        # FIXME: check n is int
+        if not isinstance(n, int):
+            raise TypeError("can't multiply sequence by non-int of type '{}'".format(type(n)))
+
         obj = self.__class__()  # FIXME: missing constructor params
         offset = len(self)
 
@@ -207,7 +209,9 @@ class SparsedList(MutableSequence):
     __rmul__ = __mul__
 
     def __imul__(self, n):
-        # FIXME: check n is int
+        if not isinstance(n, int):
+            raise TypeError("can't multiply sequence by non-int of type '{}'".format(type(n)))
+
         offset = len(self)
 
         for c in range(offset, offset * n, offset):
@@ -300,7 +304,7 @@ class SparsedList(MutableSequence):
 
         raise ValueError("'{}' is not in SparsedList".format(value))
 
-    def count(self, *args, **kwargs):
+    def count(self, *args, **kwargs):  # FIXME: add item to signature
         """
         Return count of existing elements
         If `item` keyword parameter given then method returns how many times `item` occurs in list

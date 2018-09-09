@@ -402,6 +402,13 @@ class TestSparsedList:
         assert list(res.items()) == check_data
         assert res is not self.obj
 
+    @pytest.mark.parametrize('n', (None, (1,2,3), 1.1))
+    def test_mul_accepts_int_only(self, powertwo_data, n):
+        self.obj.extend(powertwo_data)
+
+        with pytest.raises(TypeError):
+            self.obj.__mul__(n)
+
     def test_imul(self, powertwo_data):
         self.obj.extend(powertwo_data)
         n = 4
@@ -412,6 +419,13 @@ class TestSparsedList:
 
         assert list(res.items()) == check_data
         assert res is self.obj
+
+    @pytest.mark.parametrize('n', (None, (1,2,3), 1.1))
+    def test_imul_accepts_int_only(self, powertwo_data, n):
+        self.obj.extend(powertwo_data)
+
+        with pytest.raises(TypeError):
+            self.obj.__imul__(n)
 
     def test_insert1(self, plain_data):
         self.obj.extend(plain_data)
