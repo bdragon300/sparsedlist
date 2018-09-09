@@ -117,7 +117,7 @@ class SparsedList(MutableSequence):
 
             step = step or 1
             start = start or 0
-            stop = stop or self.tail() + 1
+            stop = stop or len(self)
             c = start
             while stop is None or c < stop:
                 try:
@@ -148,10 +148,7 @@ class SparsedList(MutableSequence):
 
     def __add__(self, other):
         obj = self.__class__()
-        try:
-            offset = self.tail() + 1
-        except IndexError:
-            offset = 0
+        offset = len(self)
 
         if isinstance(other, SparsedList):
             other = ((i + offset, v) for i, v in other.data)
@@ -184,10 +181,7 @@ class SparsedList(MutableSequence):
         return obj
 
     def __iadd__(self, other):
-        try:
-            offset = self.tail() + 1
-        except IndexError:
-            offset = 0
+        offset = len(self)
 
         if isinstance(other, SparsedList):
             other = ((i + offset, v) for i, v in other.data)
@@ -201,11 +195,7 @@ class SparsedList(MutableSequence):
 
     def __mul__(self, n):
         obj = self.__class__()
-
-        try:
-            offset = self.tail() + 1
-        except IndexError:
-            offset = 0
+        offset = len(self)
 
         for c in range(0, offset * n, offset):
             for i, v in self.data:
@@ -216,10 +206,7 @@ class SparsedList(MutableSequence):
     __rmul__ = __mul__
 
     def __imul__(self, n):
-        try:
-            offset = self.tail() + 1
-        except IndexError:
-            offset = 0
+        offset = len(self)
 
         for c in range(offset, offset * n, offset):
             for i, v in self.data.items(stop=offset):
@@ -241,7 +228,7 @@ class SparsedList(MutableSequence):
 
     def append(self, value):
         """Append given value in place after the last item"""
-        self.data.insert(self.tail() + 1, value)
+        self.data.insert(len(self), value)
 
     def extend(self, items):
         """
@@ -267,7 +254,7 @@ class SparsedList(MutableSequence):
     def pop(self, index=-1):
         """Pop the item with given index. Negative indexes counted from position of the last existing item"""
         if index < 0:
-            index = max(self.tail() + index + 1, 0)
+            index = max(len(self) + index, 0)
 
         try:
             return self.data.pop(index)
@@ -300,9 +287,9 @@ class SparsedList(MutableSequence):
         Raises a ValueError if there is no such item.
         """
         if start is not None and start < 0:
-            start = max(self.tail() + start + 1, 0)
+            start = max(len(self) + start, 0)
         if stop is not None and stop < 0:
-            stop = max(self.tail() + stop + 1, 0)
+            stop = max(len(self) + stop, 0)
 
         for i, v in self.data.items(start, stop):
             if v == value:
@@ -324,9 +311,9 @@ class SparsedList(MutableSequence):
 
     def items(self, start=None, stop=None):
         if start is not None and start < 0:
-            start = max(self.tail() + start + 1, 0)
+            start = max(len(self) + start, 0)
         if stop is not None and stop < 0:
-            stop = max(self.tail() + stop + 1, 0)
+            stop = max(len(self) + stop, 0)
 
         return self.data.items(start=start, stop=stop)
 
