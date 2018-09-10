@@ -7,7 +7,7 @@ DOES_NOT_EXIST = object()
 
 
 class SparsedList(MutableSequence):
-    def __init__(self, initlist=None, inititems=None, ignore_unset=True, ):
+    def __init__(self, initlist=None, inititems=None):
         """
         :param initlist: Initial data. Elements will be placed sequentallu
         :param inititems: Initial items pairs.
@@ -341,6 +341,24 @@ class SparsedList(MutableSequence):
             stop = max(self.tail() + stop + 1, 0)
 
         return self.data.items(start=start, stop=stop)
+
+    def keys(self, start=None, stop=None):  # NOQA
+        """
+        Return keys of non-empty items
+        :param start:
+        :param stop:
+        :return:
+        """
+        return self.data.keys(start=start, stop=stop)
+
+    def values(self, start=None, stop=None):  # NOQA
+        """
+        Return values of non-empty items
+        :param start:
+        :param stop:
+        :return:
+        """
+        return self.data.values(start=start, stop=stop)
 
     def tail(self):
         """Return index of the last element"""
