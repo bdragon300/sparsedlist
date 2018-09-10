@@ -7,7 +7,12 @@ DOES_NOT_EXIST = object()
 
 
 class SparsedList(MutableSequence):
-    def __init__(self, initlist=None, inititems=None):
+    def __init__(self, initlist=None, inititems=None, ignore_unset=True, ):
+        """
+        :param initlist: Initial data. Elements will be placed sequentallu
+        :param inititems: Initial items pairs.
+        :param ignore_unset:
+        """
         self.data = SkipList()
 
         if initlist is not None:
@@ -140,7 +145,12 @@ class SparsedList(MutableSequence):
                 raise IndexError("Item '{}' does not exist".format(key))
 
     def __iter__(self):
-        return iter(self.data.values())
+        c = 0
+        for k, v in self.data.items():
+            if k > c:
+                raise IndexError("Item '{}' does not exist".format(c))
+            yield v
+            c += 1
 
     def __reversed__(self):
         keys = list(self.data.keys())

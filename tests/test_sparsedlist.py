@@ -308,6 +308,17 @@ class TestSparsedList:
         with pytest.raises(IndexError):
             del self.obj[ind]
 
+    def test_iter_error_on_unset(self, powertwo_data):
+        self.obj.extend(powertwo_data)
+        check_data = 3
+
+        with pytest.raises(IndexError) as e:
+            c = 0
+            for i in self.obj:
+                c += 1
+
+            assert c == check_data
+
     def test_reversed_result(self, powertwo_data):
         self.obj.extend(powertwo_data)
         check_data = [i[1] for i in reversed(powertwo_data)]
