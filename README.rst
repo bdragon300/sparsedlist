@@ -5,7 +5,7 @@ sparsedlist
 `Skip list <https://en.wikipedia.org/wiki/Skip_list>`__ data structure.
 Python3 is used.
 
-**sparsedlist** is a list structure, where set of indices can have
+**sparsedlist** is a list structure, where set of indexes can have
 “gaps” and you can put a value to any index. In other words, the
 structure is similar to dict, but has list interface and sorted numeric
 indexes.
@@ -29,18 +29,33 @@ Example:
    >>> print(s[-1])
    rock the microphone
    >>> print(s[-2])
+   None
+   >>> print(list(s[18:23]))
+   [8, 9, None, None, None]
+   >>> print(s[100500])
+   None
+
+By default **sparsedlist** substitutes item on **None** value if it has
+not set. To disable this feature, pass *required* param to constructor.
+Then **IndexError** will be raised on getting unset items. For instance:
+
+.. code:: python
+
+   >>> from sparsedlist import SparsedList
+   >>> s = SparsedList(required=True)
+   >>> s[10:20] = range(10)
+   >>> print(s[100500])
    Traceback (most recent call last):
      File "<stdin>", line 1, in <module>
      File "/usr/local/lib/python3.6/dist-packages/sparsedlist.py", line 73, in __getitem__
        raise IndexError("Item with index '{}' does not exist".format(item))
-   IndexError: Item with index '179' does not exist
-   >>>
-   >>> print(s[100])
+   IndexError: Item with index '100500' does not exist
+   >>> print(list(s[18:25]))
    Traceback (most recent call last):
      File "<stdin>", line 1, in <module>
      File "/usr/local/lib/python3.6/dist-packages/sparsedlist.py", line 73, in __getitem__
        raise IndexError("Item with index '{}' does not exist".format(item))
-   IndexError: Item with index '100' does not exist
+   IndexError: Item with index '20' does not exist
 
 Dependencies
 ============
