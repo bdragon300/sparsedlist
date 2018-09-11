@@ -110,7 +110,6 @@ class TestSparsedList:
 
         res = self.obj[ind]
 
-        print(list(self.obj.items()))
         assert list(res) == test_data[ind]
 
     @pytest.mark.parametrize('ind', (
@@ -125,38 +124,111 @@ class TestSparsedList:
 
         assert list(res) == []
 
-    @pytest.mark.parametrize('ind', (3, 2**15, -2**15))
-    def test_getitem_indexerror_int_index(self, ind, powertwo_data):
+    @pytest.mark.parametrize('ind', (3, 2**15))
+    def test_getitem_return_none_on_unset_element(self, ind, powertwo_data):
         self.obj.extend(powertwo_data)
 
+        res = self.obj[ind]
+
+        assert res is None
+
+    def test_getitem_error_too_large_negative_index(self, plain_data):
+        self.obj.extend(plain_data)
+
         with pytest.raises(IndexError):
-            self.obj[ind]
+            res = self.obj[-100500]
 
     @pytest.mark.parametrize('ind', itertools.chain(
         slice_permutations(2 ** 15, 2 ** 16, 3),
         slice_permutations(2, 50, 3),
-        slice_permutations(-200, -100, 3)
+        slice_permutations(-8, -1, 3)
     ))
-    def test_getitem_indexerror_slice(self, ind, powertwo_data):
+    def test_getitem_return_none_unset_elements_in_slice(self, ind, powertwo_data):
         self.obj.extend(powertwo_data)
+        d = dict(powertwo_data)
+        dlen = sorted(d.keys())[-1] + 1
+        start = dlen + ind.start if (ind.start and ind.start < 0) else ind.start or 0
+        stop = dlen + ind.stop if (ind.stop and ind.stop < 0) else ind.stop or dlen
+        check_data = [
+            d[i] if i in d else None
+            for i in range(start, stop, ind.step or 1)
+        ]
+        # check_data = [powertwo_data[i] if i in powertwo_data else None for i in range(*ind.indices(2 ** 9 + 1))]
 
-        with pytest.raises(IndexError):
-            list(self.obj[ind])
+        res = list(self.obj[ind])
+
+        assert res == check_data
 
     @pytest.mark.parametrize('step', (0, -1))
     def test_getitem_error_on_zero_or_negative_step(self, step, plain_data):
         self.obj.extend(plain_data)
 
         with pytest.raises(ValueError):
-            self.obj[1:3:step]
+            res = self.obj[1:3:step]
 
+    @pytest.mark.xfail
     @pytest.mark.parametrize('ind', itertools.chain(
         slice_permutations(1, 10, 3),
         slice_permutations(-200, -100, 3)
     ))
     def test_getitem_error_on_empty_list(self, ind):
+        check_data = [None for i in range(*ind.indices(2 ** 10))]
+
+        res = list(self.obj[ind])
+
+        assert res == check_data
+
+    @pytest.mark.parametrize('ind', itertools.chain(
+        slice_permutations(1, 10, 3),
+        slice_permutations(-200, -100, 3)
+    ))
+    def test_getitem_required_error_on_empty_list(self, ind):
+        if ind.stop is None:
+            pytest.skip()
+
+        obj = SparsedList(required=True)
+
         with pytest.raises(IndexError):
-            list(self.obj[ind])
+            list(obj[ind])
+
+    @pytest.mark.parametrize('ind', (3, 2**15))
+    def test_getitem_required_error_on_unset_element_get(self, ind, powertwo_data):
+        obj = SparsedList(required=True)
+        obj.extend(powertwo_data)
+
+        with pytest.raises(IndexError):
+            res = obj[ind]
+
+    def test_getitem_required_error_too_large_negative_index(self, plain_data):
+        obj = SparsedList(required=True)
+        obj.extend(plain_data)
+
+        with pytest.raises(IndexError):
+            res = obj[-100500]
+
+    @pytest.mark.parametrize('ind', itertools.chain(
+        slice_permutations(2 ** 15, 2 ** 16, 3),
+        slice_permutations(2, 50, 3),
+        slice_permutations(-200, -100, 3)
+    ))
+    def test_getitem_required_error_on_unset_elements_in_slice_stop_is_not_none(self, ind, powertwo_data):
+        if ind.stop is None:
+            pytest.skip()
+
+        obj = SparsedList(required=True)
+        obj.extend(powertwo_data)
+
+        with pytest.raises(IndexError):
+            list(obj[ind])
+
+    @pytest.mark.parametrize('ind', (slice(5, None), slice(None)))
+    def test_getitem_required_error_on_unset_elements_in_slice_stop_is_none(self, ind, plain_data):
+        obj = SparsedList(required=True)
+        obj.extend(plain_data)
+        d = dict(plain_data)
+        check_data = list(d.values())[ind]
+
+        assert list(obj[ind]) == check_data
 
     @pytest.mark.parametrize('ind', (2, -3, 1000))
     def test_setitem_index(self, ind, plain_data):
@@ -209,46 +281,41 @@ class TestSparsedList:
         slice(None, 5),
         slice(0, 5, 2)
     ))
-    def test_setitem_cut_value_if_slice_shorter_on_unfilled_list(self, ind):
+    def test_setitem_drop_the_rest_iterable_elements_if_slice_is_shorter(self, ind):
         list_length = 10
         test_data = ['test_mark'] * list_length
 
         self.obj[ind] = test_data
 
-        # Check next item
-        with pytest.raises(IndexError):
-            check_index = ind.stop + ((ind.step or 1) - 1)
-            self.obj[check_index]
+        # Check if next item is unset in list
+        check_index = ind.stop + ((ind.step or 1) - 1)
+        assert check_index not in self.obj.keys()
 
     @pytest.mark.parametrize('ind', slice_permutations(5, 25, 3))
-    def test_setitem_remove_the_rest_elements_if_positive_slice_longer_than_iterable(self, ind, plain_data):
+    def test_setitem_remove_the_rest_elements_if_positive_slice_wider_than_iterable(self, ind, plain_data):
         self.obj.extend(plain_data)
         check_data = list(plain_data)
-        list_length = 5
+        list_length = len(check_data) - 10
         test_data = ['test_mark'] * list_length
 
         self.obj[ind] = test_data
 
-        start = (ind.start or 0) + list_length * (ind.step or 1)
-        for i in range(start, ind.stop or len(check_data), ind.step or 1):
-            with pytest.raises(IndexError):
-                self.obj[i]
+        unset_start = (ind.start or 0) + list_length * (ind.step or 1)
+        assert all(i not in self.obj.keys() for i in range(unset_start, ind.stop or len(check_data), ind.step or 1))
 
     @pytest.mark.parametrize('ind', slice_permutations(-25, -5, 3))
-    def test_setitem_remove_the_rest_elements_if_negative_slice_longer_than_iterable(self, ind, plain_data):
+    def test_setitem_delete_the_rest_elements_if_negative_slice_wider_than_iterable(self, ind, plain_data):
         self.obj.extend(plain_data)
         check_data = list(plain_data)
-        list_length = 5
+        list_length = len(check_data) - 10
         test_data = ['test_mark'] * list_length
 
         self.obj[ind] = test_data
 
         # Convert negative indexes to positive ones
-        start = (len(check_data) + (ind.start or 0)) + list_length * (ind.step or 1)
-        stop = len(check_data) + (ind.stop or 0)
-        for i in range(start, stop, ind.step or 1):
-            with pytest.raises(IndexError):
-                self.obj[i]
+        unset_start = (len(check_data) + (ind.start or 0)) + list_length * (ind.step or 1)
+        unset_stop = len(check_data) + (ind.stop or 0)
+        assert all(i not in self.obj.keys() for i in range(unset_start, unset_stop, ind.step or 1))
 
     def test_setitem_error_if_not_iterable_for_slice(self):
         with pytest.raises(TypeError):
@@ -285,8 +352,7 @@ class TestSparsedList:
 
         del self.obj[ind]
 
-        with pytest.raises(IndexError):
-            self.obj[ind]
+        assert self.obj[ind] is None
 
     @pytest.mark.parametrize('ind', itertools.chain(
         slice_permutations(0, 5, 3),
@@ -310,11 +376,19 @@ class TestSparsedList:
 
     def test_iter_error_on_unset(self, powertwo_data):
         self.obj.extend(powertwo_data)
+        d = dict(powertwo_data)
+        check_data = [d[i] if i in d else None for i in range(sorted(d.keys())[-1] + 1)]
+
+        assert list(self.obj) == check_data
+
+    def test_iter_required_error_on_unset(self, powertwo_data):
+        obj = SparsedList(required=True)
+        obj.extend(powertwo_data)
         check_data = 3
 
         with pytest.raises(IndexError) as e:
             c = 0
-            for i in self.obj:
+            for i in obj:
                 c += 1
 
             assert c == check_data

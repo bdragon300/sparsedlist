@@ -7,13 +7,15 @@ DOES_NOT_EXIST = object()
 
 
 class SparsedList(MutableSequence):
-    def __init__(self, initlist=None, inititems=None):
+    def __init__(self, initlist=None, inititems=None, required=False):
         """
-        :param initlist: Initial data. Elements will be placed sequentallu
-        :param inititems: Initial items pairs.
-        :param ignore_unset:
+        :param initlist: Optional. Initial data. Elements will be placed sequentallu
+        :param inititems: Optional. Initial items pairs.
+        :param required: Optional. If True, getting unset elements causes IndexError. Otherwise, unset elements will
+            be substituted by None. Default is False.
         """
         self.data = SkipList()
+        self._required = required
 
         if initlist is not None:
             for i, v in enumerate(initlist):
@@ -24,7 +26,13 @@ class SparsedList(MutableSequence):
                 self.data.insert(i, v)
 
     def _clone(self):
-        return self.__class__()
+        return self.__class__(required=self._required)
+
+    def _unset(self, index):
+        if not self._required:
+            return None
+        else:
+            raise IndexError("Item with index '{}' does not exist".format(index))
 
     def __repr__(self): return 'SparsedList{' + str(dict(self.data.items())) + '}'
 
@@ -40,7 +48,7 @@ class SparsedList(MutableSequence):
         return other.data if isinstance(other, SparsedList) else other
 
     def __contains__(self, item):
-        return self.data.__contains__(item)
+        return self.data.__contains__(item)  # FIXME: check for value, not for key
 
     def __len__(self):
         return len(self.data)
@@ -50,18 +58,23 @@ class SparsedList(MutableSequence):
             c = start or 0
             step = step or 1
 
-            items = self.data.items(start=start, stop=stop)
-            for i in items:
-                if i[0] == c:
-                    yield i[1]
-                    c += step
-                elif i[0] > c:
-                    raise IndexError("Item with index '{}' does not exist".format(c))
-
+            # E.g. [5:5] or [10:5]
             if stop is not None and (start or 0) >= stop:
                 return []
-            elif c == (start or 0):
-                raise IndexError("Item with index '{}' does not exist".format(c))
+
+            items = self.data.items(start=start, stop=stop)  # generator
+            for i in items:
+                while c < i[0]:
+                    yield self._unset(c)
+                    c += step
+
+                if c == i[0]:
+                    yield i[1]
+                    c += step
+
+            while stop is not None and c < stop:
+                yield self._unset(c)
+                c += step
 
         if isinstance(item, slice):
             start, stop, step = self._slice_indexes(item)
@@ -77,7 +90,7 @@ class SparsedList(MutableSequence):
 
             val = self.data.search(item, default=DOES_NOT_EXIST)
             if val is DOES_NOT_EXIST:
-                raise IndexError("Item with index '{}' does not exist".format(item))
+                return self._unset(item)
 
             return val
 
@@ -142,13 +155,15 @@ class SparsedList(MutableSequence):
 
                 self.data.remove(key)
             except KeyError:
-                raise IndexError("Item '{}' does not exist".format(key))
+                raise IndexError("Item with index '{}' does not exist".format(key))
 
     def __iter__(self):
         c = 0
         for k, v in self.data.items():
-            if k > c:
-                raise IndexError("Item '{}' does not exist".format(c))
+            while k > c:
+                yield self._unset(c)
+                c += 1
+
             yield v
             c += 1
 
@@ -361,7 +376,10 @@ class SparsedList(MutableSequence):
         return self.data.values(start=start, stop=stop)
 
     def tail(self):
-        """Return index of the last element"""
+        """
+        Return index of the last element
+        :raises IndexError: no elements in list
+        """
         return self.data[-1][0]
 
     def _slice_indexes(self, s):
@@ -386,7 +404,7 @@ class SparsedList(MutableSequence):
                     stop = max(last_ind + stop + 1, 0)
 
         except IndexError:
-            raise IndexError('Slice is out of range')
+            raise IndexError('Slice is out of range')  # FIXME: replace large negative indices on 0
 
         if step is not None:
             if step < 0:
