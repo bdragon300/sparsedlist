@@ -115,9 +115,10 @@ class TestSparsedList:
     @pytest.mark.parametrize('ind', (
         slice(5, 5), slice(5, 5, 2),
         slice(100, 100), slice(100, 100, 3),
-        slice(10, 5), slice(10, 5, 3)
+        slice(10, 5), slice(10, 5, 3),
+        slice(-200, -100), slice(-200, -100, 3)
     ))
-    def test_getitem_slice_empty_list(self, ind, plain_data):
+    def test_getitem_slice_return_empty_iterable(self, ind, plain_data):
         self.obj.extend(plain_data)
 
         res = self.obj[ind]
@@ -166,10 +167,9 @@ class TestSparsedList:
         with pytest.raises(ValueError):
             res = self.obj[1:3:step]
 
-    @pytest.mark.xfail
-    @pytest.mark.parametrize('ind', itertools.chain(
-        slice_permutations(1, 10, 3),
-        slice_permutations(-200, -100, 3)
+    @pytest.mark.parametrize('ind', (
+        slice(1, 10), slice(1, 10, 3),
+        slice(None, 10), slice(None, 10, 3)
     ))
     def test_getitem_error_on_empty_list(self, ind):
         check_data = [None for i in range(*ind.indices(2 ** 10))]
@@ -179,8 +179,7 @@ class TestSparsedList:
         assert res == check_data
 
     @pytest.mark.parametrize('ind', itertools.chain(
-        slice_permutations(1, 10, 3),
-        slice_permutations(-200, -100, 3)
+        slice_permutations(1, 10, 3)
     ))
     def test_getitem_required_error_on_empty_list(self, ind):
         if ind.stop is None:
@@ -209,7 +208,7 @@ class TestSparsedList:
     @pytest.mark.parametrize('ind', itertools.chain(
         slice_permutations(2 ** 15, 2 ** 16, 3),
         slice_permutations(2, 50, 3),
-        slice_permutations(-200, -100, 3)
+        slice_permutations(-200, -1, 3)
     ))
     def test_getitem_required_error_on_unset_elements_in_slice_stop_is_not_none(self, ind, powertwo_data):
         if ind.stop is None:
@@ -220,6 +219,14 @@ class TestSparsedList:
 
         with pytest.raises(IndexError):
             list(obj[ind])
+
+    def test_getitem_required_empty_iterable_when_slice_too_far_left(self, plain_data):
+        obj = SparsedList(required=True)
+        obj.extend(plain_data)
+
+        res = obj[-200:-100]
+
+        assert list(res) == []
 
     @pytest.mark.parametrize('ind', (slice(5, None), slice(None)))
     def test_getitem_required_error_on_unset_elements_in_slice_stop_is_none(self, ind, plain_data):
@@ -317,7 +324,7 @@ class TestSparsedList:
         unset_stop = len(check_data) + (ind.stop or 0)
         assert all(i not in self.obj.keys() for i in range(unset_start, unset_stop, ind.step or 1))
 
-    def test_setitem_error_if_not_iterable_for_slice(self):
+    def test_setitem_error_if_slice_argument_is_not_iterable(self):
         with pytest.raises(TypeError):
             self.obj[0:2] = 123
 
@@ -327,17 +334,18 @@ class TestSparsedList:
         with pytest.raises(IndexError):
             self.obj[-1000] = 123
 
-    @pytest.mark.parametrize('ind', (
-        -1,
-        slice(-11, -5),
-        slice(-11, -5, 2)
-    ))
-    def test_setitem_error_negative_indexes_on_empty_list(self, ind):
-        list_length = 10
-        test_data = ['test_mark'] * list_length
-
+    def test_setitem_error_negative_index_on_empty_list(self):
         with pytest.raises(IndexError):
-            self.obj[ind] = test_data
+            self.obj[-1] = 'test_mark'
+
+    @pytest.mark.parametrize('ind', (
+        slice(5, 5), slice(5, 5, 3),
+        slice(-200, -100), slice(-200, -100, 3)
+    ))
+    def test_setitem_do_nothing_on_slice_set_on_empty_list(self, ind):
+        self.obj[ind] = range(100)
+
+        assert len(self.obj) == 0
 
     @pytest.mark.parametrize('step', (0, -1))
     def test_setitem_error_on_zero_or_negative_step(self, step, plain_data):

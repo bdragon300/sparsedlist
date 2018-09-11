@@ -388,31 +388,25 @@ class SparsedList(MutableSequence):
         :param s: slice object
         :return: start, stop, step
         """
-        start, stop, step = s.start, s.stop, s.step
+        pieces = [s.start, s.stop, s.step]
 
-        try:
-            if start is not None:
-                start = int(start)
-                if start < 0:
-                    last_ind = self.data[-1][0]  # IndexError if empty
-                    start = max(last_ind + start + 1, 0)
+        for i in [0, 1]:
+            if pieces[i] is not None:
+                pieces[i] = int(pieces[i])
+                if pieces[i] < 0:
+                    try:
+                        last_ind = self.tail()  # IndexError if empty
+                    except IndexError:
+                        last_ind = 0
+                    pieces[i] = max(last_ind + pieces[i] + 1, 0)
 
-            if stop is not None:
-                stop = int(stop)
-                if stop < 0:
-                    last_ind = self.data[-1][0]  # IndexError if empty
-                    stop = max(last_ind + stop + 1, 0)
-
-        except IndexError:
-            raise IndexError('Slice is out of range')  # FIXME: replace large negative indices on 0
-
-        if step is not None:
-            if step < 0:
+        if pieces[2] is not None:
+            if pieces[2] < 0:
                 raise ValueError('Negative slice step is not supported')
-            elif step == 0:
+            elif pieces[2] == 0:
                 raise ValueError('Slice step cannot be zero')
 
-        return start, stop, step
+        return tuple(pieces)
 
 
 __all__ = ('SparsedList', )
