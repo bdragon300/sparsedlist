@@ -83,6 +83,22 @@ class TestSparsedList:
 
         assert res is expect
 
+    def test_contains(self, powertwo_data):
+        self.obj.extend(powertwo_data)
+        d = dict(powertwo_data)
+
+        res = d[2 ** 3] in self.obj
+
+        assert res
+
+    def test_contains2(self, powertwo_data):
+        self.obj.extend(powertwo_data)
+        d = dict(powertwo_data)
+
+        res = object in self.obj
+
+        assert not res
+
     def test_len(self, powertwo_data):
         self.obj.extend(powertwo_data)
         check_data = len(powertwo_data)

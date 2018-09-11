@@ -48,7 +48,7 @@ class SparsedList(MutableSequence):
         return other.data if isinstance(other, SparsedList) else other
 
     def __contains__(self, item):
-        return self.data.__contains__(item)  # FIXME: check for value, not for key
+        return any(x == item for x in self.data.values())
 
     def __len__(self):
         return len(self.data)
