@@ -4,6 +4,7 @@ import itertools
 from sparsedlist import SparsedList
 from pyskiplist import SkipList
 import re
+import copy
 
 
 machinery_class = SkipList
@@ -535,6 +536,24 @@ class TestSparsedList:
 
         with pytest.raises(TypeError):
             self.obj.__imul__(n)
+
+    def test_copycopy(self, plain_data):
+        self.obj.extend(plain_data)
+
+        res = copy.copy(self.obj)
+
+        assert res is not self.obj \
+               and res.data is not self.obj.data \
+               and all(res[x] is self.obj[x] for x in self.obj.keys())
+
+    def test_copydeepcopy(self, plain_data):
+        self.obj.extend(plain_data)
+
+        res = copy.deepcopy(self.obj)
+
+        assert res is not self.obj \
+               and res.data is not self.obj.data \
+               and all(res[x] is not self.obj[x] for x in self.obj.keys())
 
     def test_insert1(self, plain_data):
         self.obj.extend(plain_data)

@@ -1,6 +1,7 @@
 import itertools
 from pyskiplist import SkipList
 from collections import MutableSequence, Iterable
+from copy import deepcopy
 
 
 DOES_NOT_EXIST = object()
@@ -257,6 +258,9 @@ class SparsedList(MutableSequence):
                 self.data.insert(i + c, v)
 
         return self
+
+    def __copy__(self):
+        return self.copy()
 
     def insert(self, index, value):
         index = int(index)
