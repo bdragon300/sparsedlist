@@ -169,8 +169,8 @@ class SparsedList(MutableSequence):
             c += 1
 
     def __reversed__(self):
-        keys = list(self.data.keys())
-        return (self.data.search(i) for i in reversed(keys))
+        l = len(self.data)
+        return (self.data[i][1] for i in range(l - 1, -1, -1))
 
     def __add__(self, other):
         obj = self._clone()
@@ -291,14 +291,9 @@ class SparsedList(MutableSequence):
         self.data.clear()
 
     def reverse(self):
-        # TODO: optimize by memory
-        new = SkipList()
-
-        keys = list(self.data.keys())
-        for k, v in zip(keys[::-1], self.data.values()):
-            new.insert(k, v)
-
-        self.data = new
+        l = len(self.data)
+        for k1, k2 in zip(range(l // 2), range(l - 1, 0, -1)):
+            self.data[k1], self.data[k2] = self.data[k2][1], self.data[k1][1]
 
     def pop(self, index=-1):
         """Pop the item with given index. Negative indexes counted from position of the last existing item"""
@@ -316,12 +311,8 @@ class SparsedList(MutableSequence):
         self.data.remove(ind)
 
     def sort(self, *args, **kwds):
-        new = SkipList()
-
-        for k, v in zip(self.data.keys(), sorted(self.data.values())):
-            new.insert(k, v)
-
-        self.data = new
+        for k, v in enumerate(sorted(self.data.values())):
+            self.data[k] = v
 
     def copy(self):
         obj = self._clone()

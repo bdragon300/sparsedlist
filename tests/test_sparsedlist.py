@@ -613,7 +613,6 @@ class TestSparsedList:
         self.obj.extend(powertwo_data)
 
         self.obj.reverse()
-
         assert list(self.obj.items()) == list(zip((i[0] for i in powertwo_data), (i[1] for i in powertwo_data[::-1])))
 
     @pytest.mark.parametrize('ind', (-2, 1))
