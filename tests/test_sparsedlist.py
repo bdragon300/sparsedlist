@@ -117,17 +117,51 @@ class TestSparsedList:
 
         assert res == test_data[ind]
 
-    @pytest.mark.parametrize('ind', itertools.chain(
-        slice_permutations(1, 10, 3),
-        slice_permutations(-10, -1, 3)
-    ))
-    def test_getitem_slice(self, ind, plain_data):
-        self.obj.extend(plain_data)
-        test_data = [i[1] for i in plain_data]
+    @pytest.mark.parametrize('ind', (3, 2**15))
+    def test_getitem_return_none_on_unset_element(self, ind, powertwo_data):
+        self.obj.extend(powertwo_data)
 
         res = self.obj[ind]
 
-        assert list(res) == test_data[ind]
+        assert res is None
+
+    @pytest.mark.parametrize('ind', (
+        slice(1, 10), slice(None, 10), slice(1, 10, 3), slice(None, 10, 3),
+        slice(-10, -1), slice(None, -1), slice(-10, -1, 3), slice(None, -1, 3)
+    ))
+    def test_getitem_slice(self, ind, plain_data):
+        self.obj.extend(plain_data)
+        check_data = [i[1] for i in plain_data]
+
+        res = self.obj[ind]
+
+        assert list(res) == check_data[ind]
+
+    @pytest.mark.parametrize('ind', (
+        slice(1, None), slice(1, None, 3),
+        slice(-10, None), slice(-10, None, 3)
+    ))
+    def test_getitem_slice_endless(self, ind, plain_data):
+        self.obj.extend(plain_data)
+        limit = 100
+        check_data = [i[1] for i in plain_data][ind]
+        check_data += [None] * (limit - len(check_data))
+
+        gen = self.obj[ind]
+        res = [next(gen) for x in range(0, limit)]
+
+        assert res == check_data
+
+    @pytest.mark.parametrize('ind', (
+        slice(1, 10), slice(1, 10, 3),
+        slice(None, 10), slice(None, 10, 3)
+    ))
+    def test_getitem_slice_nones_on_empty_list(self, ind):
+        check_data = [None for i in range(*ind.indices(2 ** 10))]
+
+        res = list(self.obj[ind])
+
+        assert res == check_data
 
     @pytest.mark.parametrize('ind', (
         slice(5, 5), slice(5, 5, 2),
@@ -142,26 +176,12 @@ class TestSparsedList:
 
         assert list(res) == []
 
-    @pytest.mark.parametrize('ind', (3, 2**15))
-    def test_getitem_return_none_on_unset_element(self, ind, powertwo_data):
-        self.obj.extend(powertwo_data)
-
-        res = self.obj[ind]
-
-        assert res is None
-
-    def test_getitem_error_too_large_negative_index(self, plain_data):
-        self.obj.extend(plain_data)
-
-        with pytest.raises(IndexError):
-            res = self.obj[-100500]
-
-    @pytest.mark.parametrize('ind', itertools.chain(
-        slice_permutations(2 ** 15, 2 ** 16, 3),
-        slice_permutations(2, 50, 3),
-        slice_permutations(-8, -1, 3)
+    @pytest.mark.parametrize('ind', (
+        slice(2 ** 15, 2 ** 16), slice(None, 2 ** 16), slice(2 ** 15, 2 ** 16, 3), slice(None, 2 ** 16, 3),
+        slice(2, 50), slice(None, 50), slice(2, 50, 3), slice(None, 50, 3),
+        slice(-8, -1), slice(None, -1), slice(-8, -1, 3), slice(None, -1, 3)
     ))
-    def test_getitem_return_none_unset_elements_in_slice(self, ind, powertwo_data):
+    def test_getitem_slice_fill_gaps_with_nones(self, ind, powertwo_data):
         self.obj.extend(powertwo_data)
         d = dict(powertwo_data)
         dlen = sorted(d.keys())[-1] + 1
@@ -177,6 +197,12 @@ class TestSparsedList:
 
         assert res == check_data
 
+    def test_getitem_error_too_large_negative_index(self, plain_data):
+        self.obj.extend(plain_data)
+
+        with pytest.raises(IndexError):
+            res = self.obj[-100500]
+
     @pytest.mark.parametrize('step', (0, -1))
     def test_getitem_error_on_zero_or_negative_step(self, step, plain_data):
         self.obj.extend(plain_data)
@@ -185,23 +211,9 @@ class TestSparsedList:
             res = self.obj[1:3:step]
 
     @pytest.mark.parametrize('ind', (
-        slice(1, 10), slice(1, 10, 3),
-        slice(None, 10), slice(None, 10, 3)
-    ))
-    def test_getitem_error_on_empty_list(self, ind):
-        check_data = [None for i in range(*ind.indices(2 ** 10))]
-
-        res = list(self.obj[ind])
-
-        assert res == check_data
-
-    @pytest.mark.parametrize('ind', itertools.chain(
-        slice_permutations(1, 10, 3)
+        slice(1, 10), slice(None, 10), slice(1, 10, 3), slice(None, 10, 3)
     ))
     def test_getitem_required_error_on_empty_list(self, ind):
-        if ind.stop is None:
-            pytest.skip()
-
         obj = SparsedList(required=True)
 
         with pytest.raises(IndexError):
@@ -222,10 +234,10 @@ class TestSparsedList:
         with pytest.raises(IndexError):
             res = obj[-100500]
 
-    @pytest.mark.parametrize('ind', itertools.chain(
-        slice_permutations(2 ** 15, 2 ** 16, 3),
-        slice_permutations(2, 50, 3),
-        slice_permutations(-200, -1, 3)
+    @pytest.mark.parametrize('ind', (
+        slice(2 ** 15, 2 ** 16), slice(None, 2 ** 16), slice(2 ** 15, 2 ** 16, 3), slice(None, 2 ** 16, 3),
+        slice(2, 50), slice(None, 50), slice(2, 50, 3), slice(None, 50, 3),
+        slice(-200, -1), slice(None, -1), slice(-200, -1, 3), slice(None, -1, 3)
     ))
     def test_getitem_required_error_on_unset_elements_in_slice_stop_is_not_none(self, ind, powertwo_data):
         if ind.stop is None:
@@ -246,13 +258,12 @@ class TestSparsedList:
         assert list(res) == []
 
     @pytest.mark.parametrize('ind', (slice(5, None), slice(None)))
-    def test_getitem_required_error_on_unset_elements_in_slice_stop_is_none(self, ind, plain_data):
+    def test_getitem_required_error_eventually_occurs_on_endless_slice(self, ind, plain_data):
         obj = SparsedList(required=True)
         obj.extend(plain_data)
-        d = dict(plain_data)
-        check_data = list(d.values())[ind]
 
-        assert list(obj[ind]) == check_data
+        with pytest.raises(IndexError):
+            assert list(obj[ind])
 
     @pytest.mark.parametrize('ind', (2, -3, 1000))
     def test_setitem_index(self, ind, plain_data):
@@ -637,7 +648,7 @@ class TestSparsedList:
 
         with pytest.raises(ValueError):
             self.obj.index(test_data[10])
-        assert list(self.obj[:10]) == list(test_data[:10]) and list(self.obj[11:]) == list(test_data[11:])
+        assert list(self.obj[:10]) == list(test_data[:10]) and list(self.obj[11:self.obj.tail() + 1]) == list(test_data[11:])
 
     def test_remove_error_not_found(self, plain_data):
         self.obj.extend(plain_data)

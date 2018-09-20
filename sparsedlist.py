@@ -73,7 +73,7 @@ class SparsedList(MutableSequence):
                     yield i[1]
                     c += step
 
-            while stop is not None and c < stop:
+            while stop is None or c < stop:
                 yield self._unset(c)
                 c += step
 
