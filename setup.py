@@ -5,7 +5,7 @@ with open("README.rst", "r") as fh:
 
 setuptools.setup(
     name='sparsedlist',
-    version='0.3',
+    version='0.4',
     packages=[''],
     url='https://github.com/bdragon300/sparsedlist',
     license='Apache-2.0',
